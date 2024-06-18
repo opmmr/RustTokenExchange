@@ -1,1 +1,1 @@
-# RustTokenExchange
+RustTokenExchange is a robust web server project developed in Rust, designed to facilitate token exchanges and user interactions. Utilizing cutting-edge technology, this project aims to provide a secure and efficient platform for managing token transactions. It emphasizes reliability, speed, and security, making it an excellent choice for those interested in exploring the potential of tokens in the digital era.
