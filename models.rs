@@ -1,71 +1,32 @@
-use serde::{Deserialize, Serialize};
-use std::env;
 use std::collections::HashMap;
+use once_cell::sync::Lazy;
+use std::sync::Mutex;
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct User {
-    pub id: u32,
-    pub username: String,
-    pub email: String,
+static TOKEN_CACHE: Lazy<Mutex<HashMap<u32, Token>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+
+// Hypothetical function to fetch tokens in batch
+// This function is purely illustrative and requires an actual implementation based on your API.
+fn fetch_tokens_in_batch(token_ids: Vec<u32>) -> Vec<Token> {
+    // This would be where you make a single consolidated API call
+    // to fetch details for all `token_ids` instead of individual calls for each ID.
+    // The below line is a placeholder for the actual API call.
+    vec![]
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Token {
-    pub id: u32,
-    pub name: String,
-    pub symbol: String,
-    pub total_supply: u64,
-    pub value: f64,
-}
+// Function to get token details, utilizes caching to minimize API calls
+fn get_token_details(token_id: u32) -> Option<Token> {
+    // First, try to get token details from cache
+    let mut cache = TOKEN_CACHE.lock().unwrap();
+    if let Some(token) = cache.get(&token_id) {
+        return Some(token.clone());
+    }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ExchangeTransaction {
-    pub id: u32,
-    pub user_id: u32,
-    pub token_id: u32,
-    pub transaction_type: TransactionType,
-    pub amount: u64,
-    pub transaction_date: String,
-}
+    // If not in cache, fetch from the external API (here, replaced by a hypothetical batch function for simplicity)
+    let tokens = fetch_tokens_in_batch(vec![token_id]);
+    for token in tokens {
+        cache.insert(token.id, the token.clone()); // Update the cache
+        return Some(token); // Return the fetched token
+    }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
-pub enum TransactionType {
-    Buy,
-    Sell,
-}
-
-fn filter_transactions_by_type(transactions: &[ExchangeTransaction], transaction_type: TransactionType) -> Vec<&ExchangeTransaction> {
-    transactions.iter()
-        .filter(|&transaction| transaction.transaction_type == transaction_type)
-        .collect()
-}
-
-fn main() {
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    println!("Database URL: {}", database_url);
-
-    let transactions = vec![
-        ExchangeTransaction {
-            id: 1,
-            user_id: 1,
-            token_id: 1,
-            transaction_type: TransactionType::Buy,
-            amount: 100,
-            transaction_date: "2023-08-01".to_string(),
-        },
-        ExchangeTransaction {
-            id: 2,
-            user_id: 1,
-            token_id: 2,
-            transaction_type: TransactionType::Sell,
-            amount: 150,
-            transaction_date: "2023-08-02".to_string(),
-        },
-    ];
-
-    let buy_transactions = filter_transactions_by_type(&transactions, TransactionType::Buy);
-    println!("Buy Transactions: {:?}", buy_transactions);
-
-    let sell_transactions = filter_transactions_by_type(&transactions, TransactionType::Sell);
-    println!("Sell Transactions: {:?}", sell_transactions);
+    None // Return None if the token is not found
 }
