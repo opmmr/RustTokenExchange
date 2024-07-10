@@ -1,4 +1,4 @@
-use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{web, App, HttpResponse, HttpServer, Responder, http::StatusCode};
 use serde::{Deserialize, Serialize};
 use std::env;
 
@@ -68,16 +68,19 @@ async fn get_transaction_history() -> impl Responder {
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
 
-    let server_address = env::var("SERVER_ADDRESS").expect("SERVER_ADDRESS not set in .env file");
+    let server_address = env::var("SERVER_ADDRESS").unwrap_or_else(|_| {
+        println!("Warning: SERVER_ADDRESS not set in .env file, using default.");
+        "127.0.0.1:8080".into()
+    });
 
-    Httpstr Server::new(|| {
+    HttpServer::new(|| {
         App::new()
-            .route("/authenticate", web::post().to(authenticate_user))
+            .route("/authenticate", web::post().to(authenticate_Item))
             .route("/exchange", web::post().to(exchange_tokens))
             .route("/balance", web::get().to(get_token_balance))
             .route("/transactions", web::get().to(get_transaction_history))
     })
-    .bind(server_address)?
+    .bind(&server_address)?
     .run()
     .await
 }
