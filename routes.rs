@@ -1,4 +1,4 @@
-use actix_web::{web, App, HttpResponse, HttpServer, Responder, http::StatusCode};
+use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};
 use std::env;
 
@@ -75,7 +75,7 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(|| {
         App::new()
-            .route("/authenticate", web::post().to(authenticate_Item))
+            .route("/authenticate", web::post().to(authenticate_user))
             .route("/exchange", web::post().to(exchange_tokens))
             .route("/balance", web::get().to(get_token_balance))
             .route("/transactions", web::get().to(get_transaction_history))
