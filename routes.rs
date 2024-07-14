@@ -33,6 +33,12 @@ struct Transaction {
     timestamp: String,
 }
 
+#[derive(Serialize)]
+struct BatchResponse {
+    balance: f32,
+    transactions: Vec<Transaction>,
+}
+
 async fn authenticate_user(info: web::Json<AuthRequest>) -> impl Responder {
     HttpResponse::Ok().json(AuthResponse {
         token: "sample_token".to_string(),
@@ -64,6 +70,29 @@ async fn get_transaction_history() -> impl Responder {
     ])
 }
 
+async fn get_balance_and_transactions() -> impl Responder {
+    let balance_response = BalanceResponse { balance: 100.0 };
+    let transactions = vec![
+        Transaction {
+            from: "Alice".to_string(),
+            to: "Bob".to_string(),
+            amount: 50.0,
+            timestamp: "2023-01-01T12:00:00Z".to_string(),
+        },
+        Transaction {
+            from: "Charlie".to_string(),
+            to: "Dave".to_string(),
+            amount: 75.0,
+            timestamp: "2023-01-02T15:30:00Z".to_string(),
+        },
+    ];
+    
+    HttpResponse::Ok().json(BatchResponse {
+        balance: balance_response.balance,
+        transactions,
+    })
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
@@ -79,6 +108,7 @@ async fn main() -> std::io::Result<()> {
             .route("/exchange", web::post().to(exchange_tokens))
             .route("/balance", web::get().to(get_token_balance))
             .route("/transactions", web::get().to(get_transaction_history))
+            .route("/batch/balance_transactions", web::get().to(get_balance_and_transactions))
     })
     .bind(&server_address)?
     .run()
