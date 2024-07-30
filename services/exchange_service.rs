@@ -1,4 +1,5 @@
 use dotenv::dotenv;
+use std::borrow::Cow;
 use std::env;
 use std::num::ParseFloatError;
 
@@ -7,7 +8,7 @@ struct RustTokenExchange {
 }
 
 enum ExchangeError {
-    EnvVarMissing(String),
+    EnvVarMissing(Cow<'static, str>),
     ParseError(ParseFloatError),
 }
 
@@ -19,8 +20,9 @@ impl From<ParseFloatError> for ExchangeError {
 
 impl RustTokenExchange {
     fn new() -> Result<Self, ExchangeError> {
-        let exchange_rate = env::var("EXCHANGE_RATE").map_err(|_| ExchangeError::EnvVarMissing("EXCHANGE_RATE not set in .env file.".to_string()))?;
-        let exchange_rate: f64 = exchange_rate.parse()?;
+        let exchange_rate_str = env::var("EXCHANGE_RATE")
+            .map_err(|_| ExchangeError::EnvVarMissing("EXCHANGE_RATE not set in .env file.".into()))?;
+        let exchange_rate: f64 = exchange_rate_str.parse()?;
         Ok(RustTokenExchange { exchange_rate })
     }
 
@@ -29,9 +31,10 @@ impl RustTokenExchange {
     }
 
     fn process_transaction(&self, sender: &str, receiver: &str, amount: f64) {
-        println!("Processing transaction: {} -> {} [{} tokens]", sender, receiver, amount);
-        let exchanged_amount = self.calculate_exchange_amount(amount);
-        println!("Exchanged amount: {:.2} at rate: {:.2}", exchanged_amount, self.exchange_rate);
+        println!(
+            "Processing transaction: {} -> {} [{} tokens], Exchanged amount: {:.2} at rate: {:.2}",
+            sender, receiver, amount, self.calculate_exchange_amount(amount), self.exchange_rate
+        );
     }
 }
 
@@ -43,7 +46,6 @@ fn main() {
             let sender = "Alice";
             let receiver = "Bob";
             let tokens = 100.0;
-
             exchange_service.process_transaction(sender, receiver, tokens);
         }
         Err(error) => match error {
