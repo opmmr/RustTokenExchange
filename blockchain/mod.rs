@@ -6,12 +6,12 @@ mod blockchain;
 
 pub static BLOCKCHAIN: Lazy<Blockchain> = Lazy::new(|| {
     let initial_difficulty = env::var("INITIAL_DIFFICULTY")
-        .expect("Expected INITIAL_DIFFICULTY in .env")
+        .unwrap_or_else(|_| "1".to_string()) // Assuming a default value
         .parse::<u32>()
         .expect("INITIAL_DIFFICULTY must be an unsigned integer");
 
     let mining_reward = env::var("MINING_REWARD")
-        .expect("Expected MINING_REWARD in .env")
+        .unwrap_or_else(|_| "0.0".to_string()) // Assuming a default value
         .parse::<f32>()
         .expect("MINING_REWARD must be a floating point number");
 
