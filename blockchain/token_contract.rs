@@ -14,6 +14,7 @@ impl RustTokenExchange {
         let http = Http::new(&env::var("NODE_URL").context("NODE_URL must be set")?)
             .context("Error creating HTTP transport")?;
         let web3 = Web3::new(http);
+
         let contract_abi_path = Path::new(&env::var("CONTRACT_ABI_PATH").context("CONTRACT_ABI_PATH must be set")?);
         let contract_abi = fs::read_to_string(contract_abi_path)
             .context("Could not load contract ABI")?;
